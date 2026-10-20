@@ -109,3 +109,21 @@ python -m unittest discover -s tests -v
 This prototype validates research bookkeeping, not model-quality improvement.
 A claim of improved `val_bpb` requires controlled GPU experiments against the
 unmodified baseline.
+
+
+### Experiment-loop tracking
+
+Use `research_tracker.py` after a run to parse the standard training summary,
+record config/commit metadata, append `results.tsv`, and optionally compare
+against a measured baseline:
+
+```bash
+python research_tracker.py record --run-log run.log \
+  --config-json experiment_config.json \
+  --commit "$(git rev-parse --short HEAD)" \
+  --description "baseline"
+```
+
+See [Graph-Memory Research](GRAPH_MEMORY_RESEARCH.md) for the full protocol.
+The tracker does not run GPU training; model-quality claims require real,
+matched-budget experiments.
