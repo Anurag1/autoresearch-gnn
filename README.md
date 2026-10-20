@@ -90,3 +90,22 @@ I think these would be the reasonable hyperparameters to play with. Ask your fav
 ## License
 
 MIT
+
+
+## Experimental extension: graph-memory discovery
+
+The `research/graph-memory-discovery` branch introduces an optional,
+standard-library-only prototype for tracking evidence, detecting opposing
+claims, and deduplicating experiment configurations without changing the core
+training or evaluation path.
+
+See [Graph-Memory Discovery Layer](GRAPH_MEMORY_RESEARCH.md) and run its
+CPU-only tests with:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+This prototype validates research bookkeeping, not model-quality improvement.
+A claim of improved `val_bpb` requires controlled GPU experiments against the
+unmodified baseline.
