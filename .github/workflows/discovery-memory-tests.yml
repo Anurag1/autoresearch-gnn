@@ -1,4 +1,4 @@
-name: Discovery memory tests
+name: Discovery and experiment-tracker tests
 
 on:
   push:
