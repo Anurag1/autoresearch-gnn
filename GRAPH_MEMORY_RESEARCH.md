@@ -71,3 +71,34 @@ print(ledger.contains_config({"lr": 0.02, "depth": 8}))
 
 The initial unit tests validate the bookkeeping behavior only. No GPU training
 or performance claim is implied by passing these tests.
+
+
+## Run-loop integration
+
+`research_tracker.py` records real `train.py` output after a run. It extracts
+the existing printed metrics, hashes the supplied JSON configuration, records
+the commit and training-script hash, appends the standard `results.tsv` row,
+and stores machine-readable metadata in `research/experiments.jsonl`. When a
+baseline `val_bpb` is provided, it also writes a `supports` or `refutes`
+evidence record to `research/evidence.jsonl`. Repeated conflicting outcomes
+for the same configuration become inspectable as contradictory evidence.
+
+Example baseline workflow:
+
+```bash
+python research_tracker.py record --run-log run.log \
+  --config-json experiment_config.json \
+  --commit "$(git rev-parse --short HEAD)" --description "baseline"
+```
+
+For a candidate, add `--baseline-val-bpb <measured-baseline>`. The script does
+not launch training and does not change the evaluation harness. Keep generated
+logs and local ledgers out of commits unless intentionally preparing a
+sanitized results release.
+
+## Validation boundary
+
+CPU tests validate metric parsing and artifact writing with synthetic logs.
+They do not substitute for a GPU experiment. Scientific conclusions require
+repeated baseline/candidate runs, matched training budgets and data, recording
+hardware/software details, and reporting variance as well as the best result.
