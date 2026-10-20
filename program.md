@@ -112,3 +112,42 @@ The idea is that you are a completely autonomous researcher trying things out. I
 **NEVER STOP**: Once the experiment loop has begun (after the initial setup), do NOT pause to ask the human if you should continue. Do NOT ask "should I keep going?" or "is this a good stopping point?". The human might be asleep, or gone from a computer and expects you to continue working *indefinitely* until you are manually stopped. You are autonomous. If you run out of ideas, think harder — read papers referenced in the code, re-read the in-scope files for new angles, try combining previous near-misses, try more radical architectural changes. The loop runs until the human interrupts you, period.
 
 As an example use case, a user might leave you running while they sleep. If each experiment takes you ~5 minutes then you can run approx 12/hour, for a total of about 100 over the duration of the average human sleep. The user then wakes up to experimental results, all completed by you while they slept!
+
+
+## Graph-memory experiment tracking (optional research extension)
+
+The repository includes `research_tracker.py` to persist the outcome of each
+training run without changing `train.py`, `prepare.py`, or `evaluate_bpb`.
+Use it after each run to make comparisons auditable.
+
+1. Before a run, create an untracked `experiment_config.json` containing the
+   actual settings changed for this experiment. Include a short stable key for
+   each changed parameter; do not include secrets or local paths.
+2. Capture the run as usual: `uv run train.py > run.log 2>&1`.
+3. Record the baseline run first (omit `--baseline-val-bpb`):
+
+   ```bash
+   python research_tracker.py record --run-log run.log \
+     --config-json experiment_config.json \
+     --commit "$(git rev-parse --short HEAD)" \
+     --description "baseline"
+   ```
+
+4. For each candidate, pass the measured baseline value explicitly. Lower
+   `val_bpb` is better:
+
+   ```bash
+   python research_tracker.py record --run-log run.log \
+     --config-json experiment_config.json \
+     --commit "$(git rev-parse --short HEAD)" \
+     --description "describe the hypothesis" \
+     --baseline-val-bpb 0.997900
+   ```
+
+The tracker appends run metadata to `research/experiments.jsonl`, comparison
+evidence to `research/evidence.jsonl`, and the compatible summary row to
+`results.tsv`. These are local experiment artifacts and should remain
+untracked unless the researcher deliberately publishes a sanitized,
+reproducible results bundle. Missing `val_bpb` is recorded as a crash and
+returns a non-zero exit code. The tracker records comparisons; it does not
+launch training, change acceptance rules, or establish statistical significance.
